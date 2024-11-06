@@ -17,6 +17,16 @@ POST /my-index/_search?from=40&size=20
   }
 }`;
 
+const devConsoleScriptCodeGenName = `
+PUT /_snapshot/my_repository
+{
+  "type": "fs",
+  "settings": {
+  "location": "my_backup_location"
+  }
+}
+`
+
 describe("convert", () => {
   it("checks for curl", async () => {
     expect(
@@ -37,6 +47,15 @@ describe("convert", () => {
   it("checks for javascript", async () => {
     expect(
       await convertRequests(devConsoleScript, "javascript", {
+        checkOnly: true,
+      }),
+    ).toBeTruthy();
+  });
+
+
+  it("checks for java", async () => {
+    expect(
+      await convertRequests(devConsoleScript, "java", {
         checkOnly: true,
       }),
     ).toBeTruthy();
@@ -214,6 +233,80 @@ run();
 `,
     );
   });
+
+  it("converts to java", async () => {
+    expect(await convertRequests(devConsoleScript, "java", {})).toEqual(
+`esClient.info();
+
+esClient.search(s -> s
+\t.from(40)
+\t.index("my-index")
+\t.query(q -> q
+\t\t.term(t -> t
+\t\t\t.field("user.id")
+\t\t\t.value(FieldValue.of("kimchy's"))
+\t\t)
+\t)
+\t.size(20)
+,Void.class);
+`,
+    );
+  });
+
+  it("converts to java as a complete class", async () => {
+    expect(await convertRequests(devConsoleScript, "java", { complete: true })).toEqual(
+      `package org.example;
+
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import java.io.IOException;
+
+public class Example {
+
+\tpublic static void main(String[] args) throws IOException {
+\t\tString serverUrl = "http://localhost:9200";
+
+\t\ttry (RestClient restClient = RestClient.builder(HttpHost.create(serverUrl)).build()) {
+
+\t\t\tElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+
+\t\t\tElasticsearchClient esClient = new ElasticsearchClient(transport);
+
+\t\t\tesClient.info();
+
+\t\t\tesClient.search(
+\t\t\t\t\ts -> s.from(40).index("my-index")
+\t\t\t\t\t\t\t.query(q -> q.term(t -> t.field("user.id").value(FieldValue.of("kimchy's")))).size(20),
+\t\t\t\t\tVoid.class);
+
+\t\t}
+\t}
+}
+`,
+    );
+  });
+
+  it("converts to java with codegen names", async () => {
+    expect(await convertRequests(devConsoleScriptCodeGenName, "java", {})).toEqual(
+      `esClient.snapshot().createRepository(c -> c
+\t.name("my_repository")
+\t.repository(r -> r
+\t\t.fs(f -> f
+\t\t\t.settings(s -> s
+\t\t\t\t.location("my_backup_location")
+\t\t\t)
+\t\t)
+\t)
+);
+`,
+    );
+  });
+
   it("supports a custom exporter", async () => {
     class MyExporter implements FormatExporter {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

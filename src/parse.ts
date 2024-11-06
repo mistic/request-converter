@@ -38,6 +38,13 @@ export type ParsedRequest = {
   body?: JSONObject | JSONObject[] | string;
 };
 
+export type JavaParsedRequest = {
+  api?: string;
+  params: Record<string, string | undefined>;
+  query?: Record<string, any>;
+  body?: JSONObject | JSONObject[] | string;
+};
+
 type ESRoute = {
   name: string;
   request: Request;
@@ -117,7 +124,7 @@ function parseCommand(source: string, options: ParseOptions) {
     method: "",
     url: "",
     path: "",
-    rawPath: "",
+    rawPath: ""
   };
 
   const len = source.length;
@@ -191,7 +198,6 @@ function parseCommand(source: string, options: ParseOptions) {
       }
     }
   }
-
   return data;
 
   // some commands have three double quotes `"""` in the body

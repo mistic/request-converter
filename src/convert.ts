@@ -2,6 +2,7 @@ import { parseRequests, ParsedRequest } from "./parse";
 import { PythonExporter } from "./exporters/python";
 import { CurlExporter } from "./exporters/curl";
 import { JavaScriptExporter } from "./exporters/javascript";
+import { JavaExporter } from "./exporters/java";
 
 export type ConvertOptions = {
   /** When `true`, the converter will only check if the conversion can be carried
@@ -32,6 +33,7 @@ const EXPORTERS: Record<string, FormatExporter> = {
   python: new PythonExporter(),
   curl: new CurlExporter(),
   javascript: new JavaScriptExporter(),
+  java: new JavaExporter(),
 };
 
 /**
