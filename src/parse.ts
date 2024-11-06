@@ -41,7 +41,7 @@ export type ParsedRequest = {
 export type JavaParsedRequest = {
   api?: string;
   params: Record<string, string | undefined>;
-  query?: Record<string, any>;
+  query?: Record<string, string>;
   body?: JSONObject | JSONObject[] | string;
 };
 

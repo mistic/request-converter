@@ -2,7 +2,6 @@ import Handlebars from "handlebars";
 import { JavaCaller } from "java-caller";
 import { ConvertOptions, FormatExporter } from "../convert";
 import { JavaParsedRequest, ParsedRequest } from "../parse";
-import * as util from "node:util";
 import { Request } from "../metamodel";
 
 // this regex should match the list of APIs that the java generator ignores
@@ -43,7 +42,7 @@ export class JavaExporter implements FormatExporter {
     requests: ParsedRequest[],
     options: ConvertOptions,
   ): Promise<string> {
-    let jsonArray: JavaParsedRequest[] = [];
+    const jsonArray: JavaParsedRequest[] = [];
 
     requests.forEach((req) => {
       const correctParams = getCodeGenParamNames(req.params, req.request);
@@ -57,14 +56,14 @@ export class JavaExporter implements FormatExporter {
       jsonArray.push(javaParsedRequest);
     });
 
-    var jsonString = JSON.stringify(jsonArray);
+    const jsonString = JSON.stringify(jsonArray);
 
     const java = new JavaCaller({
       minimumJavaVersion: 17,
       jar: "src/exporters/java-es-request-converter-1.0-SNAPSHOT.jar",
     });
 
-    let args: string[] = [];
+    const args: string[] = [];
     args.push(jsonString);
     args.push(options.complete ? 'true' : 'false');
     if (options.elasticsearchUrl != null) {
